@@ -110,17 +110,6 @@ export const columns: ColumnDef<Receiver>[] = [
   },
   {
     accessorKey: "cadence",
-    // header: ({ column }) => {
-    //   return (
-    //     <Button
-    //       variant="ghost"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //     >
-    //       Cadence
-    //       <ArrowUpDown className="ml-2 h-4 w-4" />
-    //     </Button>
-    //   );
-    // },
     header: () => <div>Cadence</div>,
     cell: ({ row }) => (
       <div className="lowercase">{row.getValue("cadence")}</div>
@@ -150,8 +139,6 @@ export const columns: ColumnDef<Receiver>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row, ...rest }) => {
-      // const payment = row.original;
-
       return (
         <Button
           variant="destructive"
@@ -169,13 +156,13 @@ export const columns: ColumnDef<Receiver>[] = [
 
 const formSchema = z.object({
   address: z.string(),
-  amount: z.string(),
+  amount: z.number(),
   cadence: z.string(),
   chain: z.string(),
   receivers: z.array(
     z.object({
       address: z.string(),
-      amount: z.string(),
+      amount: z.number(),
       cadence: z.string(),
       chain: z.string(),
     })
@@ -189,7 +176,7 @@ export function Create() {
     defaultValues: {
       receivers: receiversMock,
       address: "",
-      amount: "",
+      amount: 0,
       cadence: "",
       chain: "",
     },
@@ -200,6 +187,17 @@ export function Create() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
+
+    // push to receivers
+    form.setValue("receivers", [
+      ...form.getValues().receivers,
+      {
+        address: values.address,
+        amount: parseFloat(values.amount),
+        cadence: values.cadence,
+        chain: values.chain,
+      },
+    ]);
   }
 
   const receivers = form.watch("receivers");
@@ -218,9 +216,7 @@ export function Create() {
     onDelete: (address) => {
       form.setValue(
         "receivers",
-        receivers.filter(
-          (receiver) => receiver.address !== address
-        )
+        receivers.filter((receiver) => receiver.address !== address)
       );
     },
     onSortingChange: setSorting,
@@ -373,7 +369,14 @@ export function Create() {
                 <FormItem>
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input placeholder="2500.00" type="number" {...field} />
+                    <Input
+                      placeholder="2500.00"
+                      type="number"
+                      {...field}
+                      onChange={(event) =>
+                        field.onChange(Number(event.target.value))
+                      }
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
