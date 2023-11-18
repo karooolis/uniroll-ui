@@ -2,7 +2,6 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import {
   Form,
   FormControl,
@@ -12,40 +11,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-const receiversMock = [
-  {
-    cadence: "3600",
-    amount: "$250.00",
-    address: "0x1234...5671",
-    chain: "Ethereum",
-  },
-  {
-    cadence: "3600",
-    amount: "$250.00",
-    address: "0x1234...5672",
-    chain: "Celo",
-  },
-  {
-    cadence: "3600",
-    amount: "$250.00",
-    address: "0x1234...5673",
-    chain: "Gnosis",
-  },
-  {
-    cadence: "3600",
-    amount: "$250.00",
-    address: "0x1234...5674",
-    chain: "Ethereum",
-  },
-  {
-    cadence: "3600",
-    amount: "$250.00",
-    address: "0x1234...5675",
-    chain: "Ethereum",
-  },
-];
-
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -59,7 +24,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -77,30 +41,36 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const data: Receiver[] = [
+const receiversMock: Receiver[] = [
   {
+    cadence: "3600",
+    amount: 250.25,
     address: "0x1234...5671",
-    amount: 250,
     chain: "Ethereum",
-    cadence: "3600",
   },
   {
+    cadence: "3600",
+    amount: 250.25,
     address: "0x1234...5672",
-    amount: 250,
-    chain: "Ethereum",
-    cadence: "3600",
+    chain: "Celo",
   },
   {
+    cadence: "3600",
+    amount: 250.25,
     address: "0x1234...5673",
-    amount: 250,
-    chain: "Ethereum",
-    cadence: "3600",
+    chain: "Gnosis",
   },
   {
-    address: "0x1234...5674",
-    amount: 250,
-    chain: "Ethereum",
     cadence: "3600",
+    amount: 250.25,
+    address: "0x1234...5674",
+    chain: "Ethereum",
+  },
+  {
+    cadence: "3600",
+    amount: 250.25,
+    address: "0x1234...5675",
+    chain: "Ethereum",
   },
 ];
 
@@ -179,11 +149,17 @@ export const columns: ColumnDef<Receiver>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
+    cell: ({ row, ...rest }) => {
       // const payment = row.original;
 
       return (
-        <Button variant="destructive" className="float-right">
+        <Button
+          variant="destructive"
+          className="float-right"
+          onClick={() => {
+            rest.table.options.onDelete(row.original.address);
+          }}
+        >
           Delete
         </Button>
       );
@@ -226,6 +202,8 @@ export function Create() {
     console.log(values);
   }
 
+  const receivers = form.watch("receivers");
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -235,8 +213,16 @@ export function Create() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data,
+    data: receivers,
     columns,
+    onDelete: (address) => {
+      form.setValue(
+        "receivers",
+        receivers.filter(
+          (receiver) => receiver.address !== address
+        )
+      );
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
