@@ -288,9 +288,11 @@ export function Create() {
         <div className="flex items-center py-4">
           <Input
             placeholder="Filter ..."
-            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn("address")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
-              table.getColumn("email")?.setFilterValue(event.target.value)
+              table.getColumn("address")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
@@ -408,12 +410,11 @@ export function Create() {
             <FormField
               control={form.control}
               name="amount"
-              type="number"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input placeholder="2500.00" {...field} />
+                    <Input placeholder="2500.00" type="number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
