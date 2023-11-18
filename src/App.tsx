@@ -3,8 +3,6 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
-import { Button } from "@/components/ui/button";
-
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
 
 import { WagmiConfig } from "wagmi";
@@ -12,6 +10,19 @@ import { arbitrum, mainnet } from "viem/chains";
 
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const user = {
   name: "Tom Cook",
@@ -74,15 +85,48 @@ function App() {
                 <div className="flex h-16 items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <img
+                      {/* <img
                         className="h-8 w-8"
                         src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=300"
                         alt="Your Company"
-                      />
+                      /> */}
+
+                      <h2 className="text-neutral-50 text-2xl text-medium font-display">
+                        🏦 uniroll
+                      </h2>
                     </div>
                     <div className="hidden md:block">
                       <div className="ml-10 flex items-baseline space-x-4">
-                        {navigation.map((item) => (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline">Get started</Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                              <DialogTitle>Create / edit payments</DialogTitle>
+                              <DialogDescription>
+                                Create or edit payments (TODO)
+                              </DialogDescription>
+                            </DialogHeader>
+
+                            {/* <div className="grid gap-4 py-4">
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Button>Create</Button>
+                              </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Button>Edit</Button>
+                              </div>
+                            </div> */}
+
+                            <DialogFooter>
+                              <Button type="submit" className="w-1/3">Create</Button>
+                              <Button type="submit" className="w-1/3">Edit</Button>
+                              <Button type="submit" className="w-1/3" variant="outline">Cancel</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+
+                        {/* {navigation.map((item) => (
                           <a
                             key={item.name}
                             href={item.href}
@@ -96,20 +140,20 @@ function App() {
                           >
                             {item.name}
                           </a>
-                        ))}
+                        ))} */}
                       </div>
                     </div>
                   </div>
                   <div className="hidden md:block">
                     <div className="ml-4 flex items-center md:ml-6">
-                      <button
+                      {/* <button
                         type="button"
                         className="relative rounded-full bg-indigo-600 p-1 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600"
                       >
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">View notifications</span>
                         <BellIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
+                      </button> */}
 
                       <w3m-button />
 
