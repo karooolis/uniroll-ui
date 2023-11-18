@@ -79,20 +79,20 @@ const receiversMock: Receiver[] = [
     token: "0x1234...5671",
     chain: "1",
   },
-  {
-    cadence: "3600",
-    amount: "4000000000000000000000",
-    address: "0x1234...5674",
-    token: "0x1234...5671",
-    chain: "1",
-  },
-  {
-    cadence: "3600",
-    amount: "250000000000000000000",
-    address: "0x1234...5675",
-    token: "0x1234...5671",
-    chain: "1",
-  },
+  // {
+  //   cadence: "3600",
+  //   amount: "4000000000000000000000",
+  //   address: "0x1234...5674",
+  //   token: "0x1234...5671",
+  //   chain: "1",
+  // },
+  // {
+  //   cadence: "3600",
+  //   amount: "250000000000000000000",
+  //   address: "0x1234...5675",
+  //   token: "0x1234...5671",
+  //   chain: "1",
+  // },
 ];
 
 export type Receiver = {
@@ -170,15 +170,27 @@ export const columns: ColumnDef<Receiver>[] = [
     enableHiding: false,
     cell: ({ row, ...rest }) => {
       return (
-        <Button
-          variant="destructive"
-          className="float-right"
-          onClick={() => {
-            rest.table.options.onDelete(row.original.address);
-          }}
-        >
-          Delete
-        </Button>
+        <>
+          <Button
+            variant="destructive"
+            className="float-right"
+            onClick={() => {
+              rest.table.options.onDelete(row.original.address);
+            }}
+          >
+            Delete
+          </Button>
+
+          <Button
+            variant="outline"
+            className="float-right mr-2"
+            onClick={() => {
+              rest.table.options.onDelete(row.original.address);
+            }}
+          >
+            Edit
+          </Button>
+        </>
       );
     },
   },

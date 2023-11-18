@@ -1,4 +1,18 @@
 import * as React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import truncateEthAddress from "truncate-eth-address";
+import { formatEther, parseEther } from "viem";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,20 +25,23 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -34,47 +51,59 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const data: Payment[] = [
+import payrollHandlerAbi from "../abis/payroll-handler.json";
+
+import { useContractRead } from "wagmi";
+import { readContracts, writeContract } from "@wagmi/core";
+import { CONTRACT_ADDRESS } from "@/consts";
+
+const receiversMock: Receiver[] = [
   {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@yahoo.com",
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5671",
+    token: "0x1234...5671",
+    chain: "1",
   },
   {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@gmail.com",
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5672",
+    token: "0x1234...5671",
+    chain: "100",
   },
   {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@gmail.com",
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5673",
+    token: "0x1234...5671",
+    chain: "1",
   },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@hotmail.com",
-  },
+  // {
+  //   cadence: "3600",
+  //   amount: "4000000000000000000000",
+  //   address: "0x1234...5674",
+  //   token: "0x1234...5671",
+  //   chain: "1",
+  // },
+  // {
+  //   cadence: "3600",
+  //   amount: "250000000000000000000",
+  //   address: "0x1234...5675",
+  //   token: "0x1234...5671",
+  //   chain: "1",
+  // },
 ];
 
-export type Payment = {
-  id: string;
+export type Receiver = {
+  address: string;
+  token: string;
   amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
+  cadence: string;
+  chain: string;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Receiver>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -95,32 +124,37 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "address",
+    header: "Sender",
+    cell: ({ row }) => <div>{truncateEthAddress(row.getValue("address"))}</div>,
+  },
+  {
+    accessorKey: "token",
+    header: "Token",
+    cell: ({ row }) => <div>{truncateEthAddress(row.getValue("token"))}</div>,
+  },
+  {
+    accessorKey: "cadence",
+    header: () => <div>Cadence</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
+      <div className="lowercase">{Number(row.getValue("cadence"))}</div>
     ),
   },
   {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    accessorKey: "chain",
+    header: () => <div>Chain</div>,
+    cell: ({ row }) => (
+      <div className="lowercase">{Number(row.getValue("chain"))}</div>
+    ),
   },
   {
     accessorKey: "amount",
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = parseFloat(row.getValue("amount") / 10 ** 18);
+
+      // parse the 18 decimal number as a normal number using wagmi / viem
+      // const parsed = parseEther(amount.toString());
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -128,41 +162,151 @@ export const columns: ColumnDef<Payment>[] = [
         currency: "USD",
       }).format(amount);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-right font-medium">${amount}</div>;
     },
   },
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
-
+    cell: ({ row, ...rest }) => {
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <Button
+            variant="outline"
+            className="float-right mr-2"
+            onClick={() => {
+              rest.table.options.onDelete(row.original.address);
+            }}
+          >
+            Edit
+          </Button>
+        </>
       );
     },
   },
 ];
 
-export function Configure() {
+const formSchema = z.object({
+  address: z.string(),
+  amount: z.number(),
+  token: z.string(),
+  cadence: z.string(),
+  chain: z.string(),
+  receivers: z.array(
+    z.object({
+      address: z.string(),
+      token: z.string(),
+      amount: z.number(),
+      cadence: z.string(),
+      chain: z.string(),
+    })
+  ),
+});
+
+export function Create() {
+  const {
+    data: fetchedReceivers,
+    isError,
+    isLoading,
+  } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: payrollHandlerAbi,
+    functionName: "getReceivers",
+    args: [],
+  });
+
+  const [fetchedConfigs, setFetchedConfigs] = React.useState<any[]>([]);
+  const [loadingConfigs, setLoadingConfigs] = React.useState(false);
+
+  const fetchConfigs = React.useCallback(async () => {
+    setLoadingConfigs(true);
+
+    const data = await readContracts({
+      contracts: fetchedReceivers?.map((receiver, idx) => ({
+        address: CONTRACT_ADDRESS,
+        abi: payrollHandlerAbi,
+        functionName: "getConfigs",
+        args: [idx],
+      })),
+    });
+
+    setFetchedConfigs(
+      data?.map(({ result }, idx) => {
+        return {
+          ...result,
+          chain: Number(result.chainid),
+          amount: Number(result.cadenceRate),
+          address: fetchedReceivers[idx],
+        };
+      })
+    );
+
+    setLoadingConfigs(false);
+  }, [fetchedReceivers]);
+
+  React.useEffect(() => {
+    if (fetchedReceivers) {
+      fetchConfigs();
+    }
+  }, [fetchedReceivers, fetchConfigs]);
+
+  const [writeIsLoading, setWriteIsLoading] = React.useState(false);
+
+  // 1. Define your form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      receivers: [],
+      address: "0x8a99613c003468079f948fd257c53BC30c788bAE",
+      token: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
+      amount: 4141,
+      cadence: "3600",
+      chain: "100",
+    },
+  });
+
+  // 2. Define a submit handler.
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    console.log(values);
+
+    // push to receivers
+    setWriteIsLoading(true);
+
+    const { hash } = await writeContract({
+      address: CONTRACT_ADDRESS,
+      abi: payrollHandlerAbi,
+      functionName: "modifyPayRollBatch",
+      args: [
+        [values.address],
+        [
+          [
+            values.amount,
+            values.token,
+            Number(values.chain),
+            Number(values.cadence),
+            0,
+          ],
+        ],
+      ],
+    });
+
+    setFetchedConfigs(
+      fetchedConfigs.concat({
+        address: values.address,
+        token: values.token,
+        amount: values.amount,
+        cadence: values.cadence,
+        chain: values.chain,
+      })
+    );
+
+    setWriteIsLoading(false);
+  }
+
+  const receivers = form.watch("receivers");
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -172,8 +316,14 @@ export function Configure() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data,
+    data: receiversMock,
     columns,
+    onDelete: (address) => {
+      form.setValue(
+        "receivers",
+        receivers.filter((receiver) => receiver.address !== address)
+      );
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -182,6 +332,12 @@ export function Configure() {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    pageSize: 100,
+    initialState: {
+      pagination: {
+        pageSize: 50,
+      },
+    },
     state: {
       sorting,
       columnFilters,
@@ -192,15 +348,17 @@ export function Configure() {
 
   return (
     <>
-      <h2 className="my-8 text-2xl">Configure incoming payments</h2>
+      <h2 className="my-8 text-2xl">Configure payment preferences</h2>
 
       <div className="w-full">
         <div className="flex items-center py-4">
           <Input
             placeholder="Filter ..."
-            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn("address")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
-              table.getColumn("email")?.setFilterValue(event.target.value)
+              table.getColumn("address")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
@@ -218,7 +376,6 @@ export function Configure() {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
@@ -281,6 +438,7 @@ export function Configure() {
             </TableBody>
           </Table>
         </div>
+
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
@@ -310,4 +468,4 @@ export function Configure() {
   );
 }
 
-export default Configure;
+export default Create;
