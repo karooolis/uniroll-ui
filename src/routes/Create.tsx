@@ -210,26 +210,6 @@ export const columns: ColumnDef<Receiver>[] = [
         <Button variant="destructive" className="float-right">
           Delete
         </Button>
-
-        // <DropdownMenu>
-        //   <DropdownMenuTrigger asChild>
-        //     <Button variant="ghost" className="h-8 w-8 p-0">
-        //       <span className="sr-only">Open menu</span>
-        //       <MoreHorizontal className="h-4 w-4" />
-        //     </Button>
-        //   </DropdownMenuTrigger>
-        //   <DropdownMenuContent align="end">
-        //     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        //     <DropdownMenuItem
-        //       onClick={() => navigator.clipboard.writeText(payment.id)}
-        //     >
-        //       Copy payment ID
-        //     </DropdownMenuItem>
-        //     <DropdownMenuSeparator />
-        //     <DropdownMenuItem>View customer</DropdownMenuItem>
-        //     <DropdownMenuItem>View payment details</DropdownMenuItem>
-        //   </DropdownMenuContent>
-        // </DropdownMenu>
       );
     },
   },
@@ -248,15 +228,9 @@ const formSchema = z.object({
       chain: z.string(),
     })
   ),
-
-  // username: z.string().min(2, {
-  //   message: "Username must be at least 2 characters.",
-  // }),
 });
 
 export function Create() {
-  const formRef = useRef<HTMLFormElement>(null);
-
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
