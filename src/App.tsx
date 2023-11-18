@@ -4,9 +4,13 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
-import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
+import {
+  createWeb3Modal,
+  useWeb3Modal,
+  defaultWagmiConfig,
+} from "@web3modal/wagmi/react";
 
-import { WagmiConfig } from "wagmi";
+import { WagmiConfig, useAccount, useConnect } from "wagmi";
 import { arbitrum, mainnet } from "viem/chains";
 
 import { Disclosure, Menu, Transition } from "@headlessui/react";
@@ -22,34 +26,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
-const navigation = [
-  { name: "Payments", href: "#", current: true },
-  // { name: "Team", href: "#", current: false },
-  // { name: "Projects", href: "#", current: false },
-  // { name: "Calendar", href: "#", current: false },
-  // { name: "Reports", href: "#", current: false },
-];
-const userNavigation = [
-  // { name: "Your Profile", href: "#" },
-  // { name: "Settings", href: "#" },
-  // { name: "Sign out", href: "#" },
-];
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
 
 // 1. Get projectId
-const projectId = "YOUR_PROJECT_ID";
+const projectId = "89f44da207028b98a54a9fd6a323019b"; // TODO: move to env
 
 // 2. Create wagmiConfig
 const metadata = {
@@ -65,8 +44,28 @@ const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 // 3. Create modal
 createWeb3Modal({ wagmiConfig, projectId, chains });
 
+function ConnectButton() {
+  // 4. Use modal hook
+  const { open } = useWeb3Modal();
+  const { isConnected } = useAccount();
+
+  if (isConnected) {
+    return <w3m-account-button />;
+  }
+
+  return (
+    <>
+      <Button onClick={() => open()}>Connect wallet</Button>
+
+      {/* <button onClick={() => open()}>Open Connect Modal</button>
+      <button onClick={() => open({ view: 'Networks' })}>Open Network Modal</button> */}
+    </>
+  );
+}
+
 function App() {
-  const [count, setCount] = useState(0);
+  // const { open } = useWeb3Modal();
+  // const { isConnected } = useAccount();
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -230,6 +229,8 @@ function App() {
                 </button>
               </div> */}
               <nav className="flex items-center">
+                <ConnectButton />
+
                 <a
                   target="_blank"
                   rel="noreferrer"
