@@ -57,6 +57,44 @@ import { useContractRead } from "wagmi";
 import { readContracts, writeContract } from "@wagmi/core";
 import { CONTRACT_ADDRESS } from "@/consts";
 
+const receiversMock: Receiver[] = [
+  {
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5671",
+    token: "0x1234...5671",
+    chain: "1",
+  },
+  {
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5672",
+    token: "0x1234...5671",
+    chain: "100",
+  },
+  {
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5673",
+    token: "0x1234...5671",
+    chain: "1",
+  },
+  {
+    cadence: "3600",
+    amount: "4000000000000000000000",
+    address: "0x1234...5674",
+    token: "0x1234...5671",
+    chain: "1",
+  },
+  {
+    cadence: "3600",
+    amount: "250000000000000000000",
+    address: "0x1234...5675",
+    token: "0x1234...5671",
+    chain: "1",
+  },
+];
+
 export type Receiver = {
   address: string;
   token: string;
@@ -113,18 +151,18 @@ export const columns: ColumnDef<Receiver>[] = [
     accessorKey: "amount",
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = parseFloat(row.getValue("amount") / 10 ** 18);
 
       // parse the 18 decimal number as a normal number using wagmi / viem
-      const parsed = formatEther(amount.toString());
+      // const parsed = parseEther(amount.toString());
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(parsed);
+      }).format(amount);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-right font-medium">${amount}</div>;
     },
   },
   {
@@ -240,7 +278,15 @@ export function Create() {
       functionName: "modifyPayRollBatch",
       args: [
         [values.address],
-        [[values.amount, values.token, Number(values.chain), Number(values.cadence), 0]],
+        [
+          [
+            values.amount,
+            values.token,
+            Number(values.chain),
+            Number(values.cadence),
+            0,
+          ],
+        ],
       ],
     });
 
@@ -268,7 +314,7 @@ export function Create() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data: fetchedConfigs,
+    data: [...fetchedConfigs, ...receiversMock],
     columns,
     onDelete: (address) => {
       form.setValue(
