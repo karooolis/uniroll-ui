@@ -220,17 +220,6 @@ export function Create() {
     console.log(values);
 
     // push to receivers
-    // form.setValue("receivers", [
-    //   ...form.getValues().receivers,
-    //   {
-    //     address: values.address,
-    //     token: values.token,
-    //     amount: values.amount,
-    //     cadence: values.cadence,
-    //     chain: values.chain,
-    //   },
-    // ]);
-
     setWriteIsLoading(true);
 
     const { hash } = await writeContract({
@@ -252,12 +241,6 @@ export function Create() {
         chain: values.chain,
       })
     );
-
-    // await waitForTransaction({
-    //   hash,
-    // });
-
-    // await fetchConfigs();
 
     setWriteIsLoading(false);
   }
@@ -448,7 +431,7 @@ export function Create() {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monthly rate</FormLabel>
+                  <FormLabel>Cadence rate</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="2500.00"
