@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import truncateEthAddress from "truncate-eth-address";
+import { formatEther, parseEther } from "viem";
 import {
   Form,
   FormControl,
@@ -52,8 +53,8 @@ import {
 
 import payrollHandlerAbi from "../abis/payroll-handler.json";
 
-import { useContractRead, useContractWrite } from "wagmi";
-import { readContracts, writeContract, waitForTransaction } from "@wagmi/core";
+import { useContractRead } from "wagmi";
+import { readContracts, writeContract } from "@wagmi/core";
 import { CONTRACT_ADDRESS } from "@/consts";
 
 export type Receiver = {
@@ -114,11 +115,14 @@ export const columns: ColumnDef<Receiver>[] = [
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
 
+      // parse the 18 decimal number as a normal number using wagmi / viem
+      const parsed = formatEther(amount.toString());
+
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount);
+      }).format(parsed);
 
       return <div className="text-right font-medium">{formatted}</div>;
     },
@@ -215,7 +219,7 @@ export function Create() {
       receivers: [],
       address: "0x8a99613c003468079f948fd257c53BC30c788bAE",
       token: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
-      amount: 100,
+      amount: 4141,
       cadence: "3600",
       chain: "100",
     },
@@ -236,7 +240,7 @@ export function Create() {
       functionName: "modifyPayRollBatch",
       args: [
         [values.address],
-        [[values.amount, values.token, values.chain, values.cadence, 0]],
+        [[values.amount, values.token, Number(values.chain), Number(values.cadence), 0]],
       ],
     });
 
@@ -451,7 +455,9 @@ export function Create() {
                           <SelectItem value="3600">Hourly</SelectItem>
                           <SelectItem value="86400">Daily</SelectItem>
                           <SelectItem value="604800">Weekly</SelectItem>
-                          <SelectItem value={String(60 * 60 * 24 * 30)}>Monthly</SelectItem>
+                          <SelectItem value={String(60 * 60 * 24 * 30)}>
+                            Monthly
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </FormItem>

@@ -44,6 +44,13 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "appHexData",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "name": "config",
     "outputs": [
@@ -53,6 +60,34 @@
       { "internalType": "uint256", "name": "cadence", "type": "uint256" },
       { "internalType": "uint256", "name": "lastPaid", "type": "uint256" }
     ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "contract IERC20", "name": "token", "type": "address" }
+    ],
+    "name": "configurePayroll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "contract IERC20", "name": "token", "type": "address" },
+      { "internalType": "bool", "name": "enabled", "type": "bool" }
+    ],
+    "name": "enableTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "contract IERC20", "name": "", "type": "address" }
+    ],
+    "name": "enabledTokens",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -97,7 +132,7 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "owner", "type": "address" },
+      { "internalType": "address", "name": "_treasury", "type": "address" },
       { "internalType": "address", "name": "", "type": "address" },
       { "internalType": "bytes32", "name": "", "type": "bytes32" },
       { "internalType": "bytes", "name": "", "type": "bytes" },
@@ -153,6 +188,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "hooksTrampoline",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -201,6 +243,13 @@
   },
   {
     "inputs": [],
+    "name": "record",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -231,6 +280,21 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_sellToken",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "_treasury", "type": "address" },
+      { "internalType": "bytes32", "name": "_appHexData", "type": "bytes32" }
+    ],
+    "name": "setters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
     ],
     "name": "supportsInterface",
@@ -245,6 +309,13 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "treasury",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
     "type": "function"
   }
 ]
