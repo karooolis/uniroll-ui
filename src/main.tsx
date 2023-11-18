@@ -16,6 +16,7 @@ import Header from "./components/header";
 import Home from "./routes/Home";
 import Create from "./routes/Create";
 import Edit from "./routes/Edit";
+import Configure from "./routes/Configure";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/edit",
     element: <Edit />,
+  },
+  {
+    path: "/configure",
+    element: <Configure />,
   },
 ]);
 
