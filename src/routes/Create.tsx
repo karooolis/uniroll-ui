@@ -396,7 +396,7 @@ export function Create() {
               control={form.control}
               name="address"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-1/5">
                   <FormLabel>Receiver</FormLabel>
                   <FormControl>
                     <Input placeholder="0x0" {...field} />
@@ -410,7 +410,7 @@ export function Create() {
               control={form.control}
               name="token"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-1/5">
                   <FormLabel>Token</FormLabel>
                   <FormControl>
                     <Input placeholder="0x0" {...field} />
@@ -436,7 +436,7 @@ export function Create() {
                   control={form.control}
                   name="cadence"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="w-1/5">
                       <FormLabel>Cadence</FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -464,7 +464,7 @@ export function Create() {
               control={form.control}
               name="amount"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-1/5">
                   <FormLabel>Cadence rate</FormLabel>
                   <FormControl>
                     <Input
@@ -499,7 +499,7 @@ export function Create() {
               control={form.control}
               name="chain"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-1/5">
                   <FormLabel>Chain</FormLabel>
                   <Select
                     onValueChange={field.onChange}
