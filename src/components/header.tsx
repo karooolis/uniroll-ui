@@ -46,9 +46,9 @@ function Header() {
                 y2="208"
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="16"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="16"
               ></line>
               <line
                 x1="192"
@@ -57,9 +57,9 @@ function Header() {
                 y2="192"
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="16"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="16"
               ></line>
             </svg>
             <span className="hidden font-bold sm:inline-block">uniroll</span>
@@ -111,8 +111,8 @@ function Header() {
             <path
               d="M8 2H13.5C13.7761 2 14 2.22386 14 2.5V12.5C14 12.7761 13.7761 13 13.5 13H8V2ZM7 2H1.5C1.22386 2 1 2.22386 1 2.5V12.5C1 12.7761 1.22386 13 1.5 13H7V2ZM0 2.5C0 1.67157 0.671573 1 1.5 1H13.5C14.3284 1 15 1.67157 15 2.5V12.5C15 13.3284 14.3284 14 13.5 14H1.5C0.671573 14 0 13.3284 0 12.5V2.5Z"
               fill="currentColor"
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
             ></path>
           </svg>
           <span className="sr-only">Toggle Menu</span>

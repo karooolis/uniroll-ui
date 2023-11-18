@@ -1,10 +1,10 @@
 "use client";
 
+import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,18 +16,256 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import { useRef } from "react";
+
+const receiversMock = [
+  {
+    cadence: "3600",
+    amount: "$250.00",
+    address: "0x1234...5671",
+    chain: "Ethereum",
+  },
+  {
+    cadence: "3600",
+    amount: "$250.00",
+    address: "0x1234...5672",
+    chain: "Celo",
+  },
+  {
+    cadence: "3600",
+    amount: "$250.00",
+    address: "0x1234...5673",
+    chain: "Gnosis",
+  },
+  {
+    cadence: "3600",
+    amount: "$250.00",
+    address: "0x1234...5674",
+    chain: "Ethereum",
+  },
+  {
+    cadence: "3600",
+    amount: "$250.00",
+    address: "0x1234...5675",
+    chain: "Ethereum",
+  },
+];
+
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  MoreHorizontal,
+  PlusCircleIcon,
+  PlusIcon,
+  PlusSquare,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const data: Receiver[] = [
+  {
+    address: "0x1234...5671",
+    amount: 250,
+    chain: "Ethereum",
+    cadence: "3600",
+  },
+  {
+    address: "0x1234...5672",
+    amount: 250,
+    chain: "Ethereum",
+    cadence: "3600",
+  },
+  {
+    address: "0x1234...5673",
+    amount: 250,
+    chain: "Ethereum",
+    cadence: "3600",
+  },
+  {
+    address: "0x1234...5674",
+    amount: 250,
+    chain: "Ethereum",
+    cadence: "3600",
+  },
+];
+
+export type Receiver = {
+  address: string;
+  amount: number;
+  cadence: string;
+  chain: string;
+};
+
+export const columns: ColumnDef<Receiver>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "address",
+    header: "Address",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("address")}</div>
+    ),
+  },
+  {
+    accessorKey: "cadence",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Cadence
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="lowercase">{row.getValue("cadence")}</div>
+    ),
+  },
+  {
+    accessorKey: "chain",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Chain
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="lowercase">{row.getValue("chain")}</div>,
+  },
+  {
+    accessorKey: "amount",
+    header: () => <div className="text-right">Amount</div>,
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("amount"));
+
+      // Format the amount as a dollar amount
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+
+      return <div className="text-right font-medium">{formatted}</div>;
+    },
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => {
+      const payment = row.original;
+
+      return (
+        <Button variant="destructive" className="float-right">
+          Delete
+        </Button>
+
+        // <DropdownMenu>
+        //   <DropdownMenuTrigger asChild>
+        //     <Button variant="ghost" className="h-8 w-8 p-0">
+        //       <span className="sr-only">Open menu</span>
+        //       <MoreHorizontal className="h-4 w-4" />
+        //     </Button>
+        //   </DropdownMenuTrigger>
+        //   <DropdownMenuContent align="end">
+        //     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        //     <DropdownMenuItem
+        //       onClick={() => navigator.clipboard.writeText(payment.id)}
+        //     >
+        //       Copy payment ID
+        //     </DropdownMenuItem>
+        //     <DropdownMenuSeparator />
+        //     <DropdownMenuItem>View customer</DropdownMenuItem>
+        //     <DropdownMenuItem>View payment details</DropdownMenuItem>
+        //   </DropdownMenuContent>
+        // </DropdownMenu>
+      );
+    },
+  },
+];
+
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
+  address: z.string(),
+  amount: z.string(),
+  cadence: z.string(),
+  chain: z.string(),
+  receivers: z.array(
+    z.object({
+      address: z.string(),
+      amount: z.string(),
+      cadence: z.string(),
+      chain: z.string(),
+    })
+  ),
+
+  // username: z.string().min(2, {
+  //   message: "Username must be at least 2 characters.",
+  // }),
 });
 
 export function Create() {
+  const formRef = useRef<HTMLFormElement>(null);
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      receivers: receiversMock,
+      address: "",
+      amount: "",
+      cadence: "",
+      chain: "",
     },
   });
 
@@ -38,31 +276,216 @@ export function Create() {
     console.log(values);
   }
 
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  const table = useReactTable({
+    data,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  });
+
   return (
     <>
-      <h2 className="my-4 text-2xl">Create payroll</h2>
+      <h2 className="my-8 text-2xl">Create payroll</h2>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="shadcn" {...field} />
-                </FormControl>
-                <FormDescription>
-                  This is your public display name.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+      <div className="w-full">
+        <div className="flex items-center py-4">
+          <Input
+            placeholder="Filter ..."
+            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("email")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
           />
-          <Button type="submit">Submit</Button>
-        </form>
-      </Form>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-full gap-x-3 flex rounded-md border pt-2 pb-4 px-4 mt-5 items-end"
+          >
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0x0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cadence"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cadence</FormLabel>
+                  <FormControl>
+                    <Input placeholder="3600" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="amount"
+              type="number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input placeholder="2500.00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="chain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chain</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Gnosis" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit">Add</Button>
+          </form>
+        </Form>
+
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
