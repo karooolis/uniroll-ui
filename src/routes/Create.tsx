@@ -2,6 +2,7 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import truncateEthAddress from "truncate-eth-address";
 import {
   Form,
   FormControl,
@@ -120,12 +121,12 @@ export const columns: ColumnDef<Receiver>[] = [
   {
     accessorKey: "address",
     header: "Receiver",
-    cell: ({ row }) => <div>{row.getValue("address")}</div>,
+    cell: ({ row }) => <div>{truncateEthAddress(row.getValue("address"))}</div>,
   },
   {
     accessorKey: "token",
     header: "Token",
-    cell: ({ row }) => <div>{row.getValue("token")}</div>,
+    cell: ({ row }) => <div>{truncateEthAddress(row.getValue("token"))}</div>,
   },
   {
     accessorKey: "cadence",
