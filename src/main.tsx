@@ -55,7 +55,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <WagmiConfig config={wagmiConfig}>
         <Header />
 
-        <div className="container flex h-14 items-center">
+        <div className="container">
           <RouterProvider router={router} />
         </div>
       </WagmiConfig>
