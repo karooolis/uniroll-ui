@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,15 +6,12 @@ import * as z from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-import { useRef } from "react";
 
 const receiversMock = [
   {
@@ -63,14 +58,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  MoreHorizontal,
-  PlusCircleIcon,
-  PlusIcon,
-  PlusSquare,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -78,9 +66,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -174,18 +159,6 @@ export const columns: ColumnDef<Receiver>[] = [
   {
     accessorKey: "chain",
     header: () => <div>Chain</div>,
-
-    // header: ({ column }) => {
-    //   return (
-    //     <Button
-    //       variant="ghost"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //     >
-    //       Chain
-    //       <ArrowUpDown className="ml-2 h-4 w-4" />
-    //     </Button>
-    //   );
-    // },
     cell: ({ row }) => <div className="lowercase">{row.getValue("chain")}</div>,
   },
   {
@@ -207,7 +180,7 @@ export const columns: ColumnDef<Receiver>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      // const payment = row.original;
 
       return (
         <Button variant="destructive" className="float-right">
