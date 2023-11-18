@@ -155,34 +155,37 @@ export const columns: ColumnDef<Receiver>[] = [
   },
   {
     accessorKey: "cadence",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Cadence
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    // header: ({ column }) => {
+    //   return (
+    //     <Button
+    //       variant="ghost"
+    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //     >
+    //       Cadence
+    //       <ArrowUpDown className="ml-2 h-4 w-4" />
+    //     </Button>
+    //   );
+    // },
+    header: () => <div>Cadence</div>,
     cell: ({ row }) => (
       <div className="lowercase">{row.getValue("cadence")}</div>
     ),
   },
   {
     accessorKey: "chain",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Chain
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: () => <div>Chain</div>,
+
+    // header: ({ column }) => {
+    //   return (
+    //     <Button
+    //       variant="ghost"
+    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //     >
+    //       Chain
+    //       <ArrowUpDown className="ml-2 h-4 w-4" />
+    //     </Button>
+    //   );
+    // },
     cell: ({ row }) => <div className="lowercase">{row.getValue("chain")}</div>,
   },
   {
