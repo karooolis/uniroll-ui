@@ -23,7 +23,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -40,42 +40,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getContract } from "@wagmi/core";
+
+import payrollHandlerAbi from "../abis/payroll-handler.json";
+import wagmigotchiABI from "../abis/wagmigotchi.json";
+import {
+  useContractRead,
+  useContractWrite,
+  usePrepareContractWrite,
+} from "wagmi";
+import { CONTRACT_ADDRESS } from "@/consts";
 
 const receiversMock: Receiver[] = [
   {
     cadence: "3600",
     amount: 250.25,
     address: "0x1234...5671",
+    token: "0x1234...5671",
     chain: "Ethereum",
   },
   {
     cadence: "3600",
     amount: 250.25,
     address: "0x1234...5672",
+    token: "0x1234...5671",
     chain: "Celo",
   },
   {
     cadence: "3600",
     amount: 250.25,
     address: "0x1234...5673",
+    token: "0x1234...5671",
     chain: "Gnosis",
   },
   {
     cadence: "3600",
     amount: 250.25,
     address: "0x1234...5674",
+    token: "0x1234...5671",
     chain: "Ethereum",
   },
   {
     cadence: "3600",
     amount: 250.25,
     address: "0x1234...5675",
+    token: "0x1234...5671",
     chain: "Ethereum",
   },
 ];
 
 export type Receiver = {
   address: string;
+  token: string;
   amount: number;
   cadence: string;
   chain: string;
@@ -103,10 +119,13 @@ export const columns: ColumnDef<Receiver>[] = [
   },
   {
     accessorKey: "address",
-    header: "Address",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("address")}</div>
-    ),
+    header: "Receiver",
+    cell: ({ row }) => <div>{row.getValue("address")}</div>,
+  },
+  {
+    accessorKey: "token",
+    header: "Token",
+    cell: ({ row }) => <div>{row.getValue("token")}</div>,
   },
   {
     accessorKey: "cadence",
@@ -157,11 +176,13 @@ export const columns: ColumnDef<Receiver>[] = [
 const formSchema = z.object({
   address: z.string(),
   amount: z.number(),
+  token: z.string(),
   cadence: z.string(),
   chain: z.string(),
   receivers: z.array(
     z.object({
       address: z.string(),
+      token: z.string(),
       amount: z.number(),
       cadence: z.string(),
       chain: z.string(),
@@ -170,15 +191,40 @@ const formSchema = z.object({
 });
 
 export function Create() {
+  const {
+    data: fetchedReceivers,
+    isError,
+    isLoading,
+  } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: payrollHandlerAbi,
+    functionName: "getReceivers",
+    args: [],
+  });
+
+  console.log(fetchedReceivers, isError, isLoading);
+
+  const {
+    data: writeData,
+    isLoading: writeIsLoading,
+    isSuccess: writeIsSuccess,
+    write,
+  } = useContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: payrollHandlerAbi,
+    functionName: "modifyPayRollBatch",
+  });
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       receivers: receiversMock,
-      address: "",
-      amount: 0,
-      cadence: "",
-      chain: "",
+      address: "0x8a99613c003468079f948fd257c53BC30c788bAE",
+      token: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
+      amount: 100,
+      cadence: "3600",
+      chain: "100",
     },
   });
 
@@ -193,11 +239,16 @@ export function Create() {
       ...form.getValues().receivers,
       {
         address: values.address,
-        amount: parseFloat(values.amount),
+        token: values.token,
+        amount: values.amount,
         cadence: values.cadence,
         chain: values.chain,
       },
     ]);
+
+    write({
+      args: [[values.address], [[1000, values.token, 100, 100, 100]]],
+    });
   }
 
   const receivers = form.watch("receivers");
@@ -265,7 +316,6 @@ export function Create() {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
@@ -339,7 +389,21 @@ export function Create() {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>Receiver</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0x0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="token"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Token</FormLabel>
                   <FormControl>
                     <Input placeholder="0x0" {...field} />
                   </FormControl>
@@ -367,7 +431,7 @@ export function Create() {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>Monthly rate</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="2500.00"
@@ -397,7 +461,12 @@ export function Create() {
               )}
             />
 
-            <Button type="submit">Add</Button>
+            <Button type="submit" disabled={writeIsLoading}>
+              {writeIsLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Add
+            </Button>
           </form>
         </Form>
 

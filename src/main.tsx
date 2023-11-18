@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { WagmiConfig } from "wagmi";
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
 
-import { arbitrum, mainnet } from "viem/chains";
+import { mainnet, gnosis, celo } from "viem/chains";
 
 import Header from "./components/header";
 
@@ -43,7 +43,7 @@ const metadata = {
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
-const chains = [mainnet, arbitrum];
+const chains = [mainnet, gnosis, celo];
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
 // 3. Create modal
