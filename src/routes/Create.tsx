@@ -41,54 +41,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getContract } from "@wagmi/core";
 
 import payrollHandlerAbi from "../abis/payroll-handler.json";
-import wagmigotchiABI from "../abis/wagmigotchi.json";
-import {
-  useContractRead,
-  useContractWrite,
-  usePrepareContractWrite,
-} from "wagmi";
-import { CONTRACT_ADDRESS } from "@/consts";
 
-const receiversMock: Receiver[] = [
-  {
-    cadence: "3600",
-    amount: 250.25,
-    address: "0x1234...5671",
-    token: "0x1234...5671",
-    chain: "Ethereum",
-  },
-  {
-    cadence: "3600",
-    amount: 250.25,
-    address: "0x1234...5672",
-    token: "0x1234...5671",
-    chain: "Celo",
-  },
-  {
-    cadence: "3600",
-    amount: 250.25,
-    address: "0x1234...5673",
-    token: "0x1234...5671",
-    chain: "Gnosis",
-  },
-  {
-    cadence: "3600",
-    amount: 250.25,
-    address: "0x1234...5674",
-    token: "0x1234...5671",
-    chain: "Ethereum",
-  },
-  {
-    cadence: "3600",
-    amount: 250.25,
-    address: "0x1234...5675",
-    token: "0x1234...5671",
-    chain: "Ethereum",
-  },
-];
+import { useContractRead, useContractWrite } from "wagmi";
+import { readContracts, writeContract, waitForTransaction } from "@wagmi/core";
+import { CONTRACT_ADDRESS } from "@/consts";
 
 export type Receiver = {
   address: string;
@@ -132,13 +90,15 @@ export const columns: ColumnDef<Receiver>[] = [
     accessorKey: "cadence",
     header: () => <div>Cadence</div>,
     cell: ({ row }) => (
-      <div className="lowercase">{row.getValue("cadence")}</div>
+      <div className="lowercase">{Number(row.getValue("cadence"))}</div>
     ),
   },
   {
     accessorKey: "chain",
     header: () => <div>Chain</div>,
-    cell: ({ row }) => <div className="lowercase">{row.getValue("chain")}</div>,
+    cell: ({ row }) => (
+      <div className="lowercase">{Number(row.getValue("chain"))}</div>
+    ),
   },
   {
     accessorKey: "amount",
@@ -203,24 +163,48 @@ export function Create() {
     args: [],
   });
 
-  console.log(fetchedReceivers, isError, isLoading);
+  const [fetchedConfigs, setFetchedConfigs] = React.useState<any[]>([]);
+  const [loadingConfigs, setLoadingConfigs] = React.useState(false);
 
-  const {
-    data: writeData,
-    isLoading: writeIsLoading,
-    isSuccess: writeIsSuccess,
-    write,
-  } = useContractWrite({
-    address: CONTRACT_ADDRESS,
-    abi: payrollHandlerAbi,
-    functionName: "modifyPayRollBatch",
-  });
+  const fetchConfigs = React.useCallback(async () => {
+    setLoadingConfigs(true);
+
+    const data = await readContracts({
+      contracts: fetchedReceivers?.map((receiver, idx) => ({
+        address: CONTRACT_ADDRESS,
+        abi: payrollHandlerAbi,
+        functionName: "getConfigs",
+        args: [idx],
+      })),
+    });
+
+    setFetchedConfigs(
+      data?.map(({ result }, idx) => {
+        return {
+          ...result,
+          chain: Number(result.chainid),
+          amount: Number(result.cadenceRate),
+          address: fetchedReceivers[idx],
+        };
+      })
+    );
+
+    setLoadingConfigs(false);
+  }, [fetchedReceivers]);
+
+  React.useEffect(() => {
+    if (fetchedReceivers) {
+      fetchConfigs();
+    }
+  }, [fetchedReceivers, fetchConfigs]);
+
+  const [writeIsLoading, setWriteIsLoading] = React.useState(false);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      receivers: receiversMock,
+      receivers: [],
       address: "0x8a99613c003468079f948fd257c53BC30c788bAE",
       token: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
       amount: 100,
@@ -230,26 +214,52 @@ export function Create() {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
 
     // push to receivers
-    form.setValue("receivers", [
-      ...form.getValues().receivers,
-      {
+    // form.setValue("receivers", [
+    //   ...form.getValues().receivers,
+    //   {
+    //     address: values.address,
+    //     token: values.token,
+    //     amount: values.amount,
+    //     cadence: values.cadence,
+    //     chain: values.chain,
+    //   },
+    // ]);
+
+    setWriteIsLoading(true);
+
+    const { hash } = await writeContract({
+      address: CONTRACT_ADDRESS,
+      abi: payrollHandlerAbi,
+      functionName: "modifyPayRollBatch",
+      args: [
+        [values.address],
+        [[values.amount, values.token, values.chain, values.cadence, 0]],
+      ],
+    });
+
+    setFetchedConfigs(
+      fetchedConfigs.concat({
         address: values.address,
         token: values.token,
         amount: values.amount,
         cadence: values.cadence,
         chain: values.chain,
-      },
-    ]);
+      })
+    );
 
-    write({
-      args: [[values.address], [[1000, values.token, 100, 100, 100]]],
-    });
+    // await waitForTransaction({
+    //   hash,
+    // });
+
+    // await fetchConfigs();
+
+    setWriteIsLoading(false);
   }
 
   const receivers = form.watch("receivers");
@@ -263,7 +273,7 @@ export function Create() {
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data: receivers,
+    data: fetchedConfigs,
     columns,
     onDelete: (address) => {
       form.setValue(
@@ -279,6 +289,12 @@ export function Create() {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    pageSize: 100,
+    initialState: {
+      pagination: {
+        pageSize: 50,
+      },
+    },
     state: {
       sorting,
       columnFilters,
