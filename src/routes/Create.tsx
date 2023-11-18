@@ -24,6 +24,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -416,13 +424,39 @@ export function Create() {
               control={form.control}
               name="cadence"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cadence</FormLabel>
-                  <FormControl>
-                    <Input placeholder="3600" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                // <FormItem>
+                //   <FormLabel>Cadence</FormLabel>
+                //   <FormControl>
+                //     <Input placeholder="3600" {...field} />
+                //   </FormControl>
+                //   <FormMessage />
+                // </FormItem>
+
+                <FormField
+                  control={form.control}
+                  name="cadence"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cadence</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a verified email to display" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="3600">Hourly</SelectItem>
+                          <SelectItem value="86400">Daily</SelectItem>
+                          <SelectItem value="604800">Weekly</SelectItem>
+                          <SelectItem value={String(60 * 60 * 24 * 30)}>Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
               )}
             />
 
@@ -447,7 +481,7 @@ export function Create() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="chain"
               render={({ field }) => (
@@ -457,6 +491,31 @@ export function Create() {
                     <Input placeholder="Gnosis" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            <FormField
+              control={form.control}
+              name="chain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chain</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a verified email to display" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="1">Ethereum</SelectItem>
+                      <SelectItem value="100">Gnosis</SelectItem>
+                      <SelectItem value="42220">Celo</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               )}
             />
